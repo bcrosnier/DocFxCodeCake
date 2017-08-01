@@ -212,6 +212,7 @@ namespace CodeCake
                      Exec( "git", "commit -m \"Update gh-pages\"", ghPagesDir );
                      Exec( "git", "push origin gh-pages", ghPagesDir );
                      Cake.DeleteDirectory( "gh-pages", true );
+                     Exec( "git", "worktree prune" );
                  } );
 
             // The Default task for this script can be set here.
