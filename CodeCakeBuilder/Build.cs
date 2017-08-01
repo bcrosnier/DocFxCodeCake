@@ -205,14 +205,8 @@ namespace CodeCake
                 .IsDependentOn( "Push-NuGet-Packages" )
                 .Does( () =>
                  {
-                     Cake.DocFxMetadata( new DocFxMetadataSettings()
-                     {
-                         WorkingDirectory = docfxDir
-                     } );
-                     Cake.DocFxBuild( new DocFxBuildSettings()
-                     {
-                         WorkingDirectory = docfxDir
-                     } );
+                     Cake.DocFxMetadata( docfxConfigFilePath );
+                     Cake.DocFxBuild( docfxConfigFilePath );
                  } );
 
             Task( "Push-GitHub-Pages" )
