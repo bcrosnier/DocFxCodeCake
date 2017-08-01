@@ -42,6 +42,7 @@ namespace CodeCake
             var releasesDir = Cake.Directory( "CodeCakeBuilder/Releases" );
             var ghPagesDir = Cake.Directory( "gh-pages" );
             var docfxConfigFilePath = Cake.File( "Documentation/docfx.json" );
+            var docfxOutput = Cake.Directory( "Documentation/_site" );
 
             var projects = Cake.ParseSolution( solutionFileName )
                            .Projects
@@ -154,7 +155,8 @@ namespace CodeCake
                 } );
 
             Task( "Push-NuGet-Packages" )
-                .WithCriteria( () => gitInfo.IsValid )
+                //.WithCriteria( () => gitInfo.IsValid )
+                .WithCriteria( () => false )
                 .IsDependentOn( "Create-NuGet-Packages" )
                 .Does( () =>
                 {
@@ -201,22 +203,32 @@ namespace CodeCake
                 .IsDependentOn( "Push-NuGet-Packages" )
                 .Does( () =>
                  {
-                     Cake.DocFxBuild( docfxConfigFilePath, new DocFxBuildSettings()
-                     {
-
-                     } );
-
-                     Exec( "git", "worktree add gh-pages" );
-                     Cake.CopyDirectory( "Documentation/_site", ghPagesDir );
-                     Exec( "git", "add .", ghPagesDir );
-                     Exec( "git", "commit -m \"Update gh-pages\"", ghPagesDir );
-                     Exec( "git", "push origin gh-pages", ghPagesDir );
-                     Cake.DeleteDirectory( "gh-pages", true );
+                     Cake.DocFxBuild( docfxConfigFilePath );
                  } );
+
+            Task( "Push-GitHub-Pages" )
+                .WithCriteria( () => gitInfo.IsValid && gitInfo.PreReleaseName == "" )
+                .IsDependentOn( "Execute-DocFX" )
+                .Does( () =>
+                {
+                    // Checkout gh-pages branch in ghPagesDir
+                    Exec( "git", $"worktree add gh-pages {ghPagesDir}" );
+                    // Overwrite site with DocFX output
+                    Cake.CopyDirectory( docfxOutput, ghPagesDir );
+                    // Commit everything in gh-pages
+                    Exec( "git", "add .", ghPagesDir );
+                    Exec( "git", "commit -m \"Update gh-pages\"", ghPagesDir );
+                    // Push gh-pages to remote
+                    Exec( "git", "push origin gh-pages", ghPagesDir );
+                    // Cleanup
+                    Cake.DeleteDirectory( ghPagesDir, true );
+                    Exec( "git", "worktree prune" );
+                } );
+
 
             // The Default task for this script can be set here.
             Task( "Default" )
-                .IsDependentOn( "Execute-DocFX" );
+                .IsDependentOn( "Push-GitHub-Pages" );
 
         }
 
@@ -250,10 +262,19 @@ namespace CodeCake
             string originalDir = Environment.CurrentDirectory;
             try
             {
-                if( cwd != null ) Environment.CurrentDirectory = cwd.FullPath;
+                if( cwd != null )
+                {
+                    if( cwd.IsRelative )
+                    {
+                        cwd = cwd.MakeAbsolute( originalDir );
+                    }
+                    Environment.CurrentDirectory = cwd.FullPath;
+                }
                 using( var ps = Cake.StartAndReturnProcess( cmd, new ProcessSettings()
                 {
                     Arguments = args,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     WorkingDirectory = cwd
                 } ) )
                 {
