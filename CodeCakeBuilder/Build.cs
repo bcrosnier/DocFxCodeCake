@@ -15,6 +15,7 @@ using Cake.Core.Diagnostics;
 using Cake.Core.IO;
 using Cake.DocFx;
 using Cake.DocFx.Build;
+using Cake.DocFx.Metadata;
 using CK.Text;
 using SimpleGitVersion;
 using System;
@@ -43,6 +44,7 @@ namespace CodeCake
             var ghPagesDir = Cake.Directory( "gh-pages" );
             var docfxConfigFilePath = Cake.File( "Documentation/docfx.json" );
             var docfxOutput = Cake.Directory( "Documentation/_site" );
+            var docfxDir = Cake.Directory( "Documentation" );
 
             var projects = Cake.ParseSolution( solutionFileName )
                            .Projects
@@ -203,7 +205,14 @@ namespace CodeCake
                 .IsDependentOn( "Push-NuGet-Packages" )
                 .Does( () =>
                  {
-                     Cake.DocFxBuild( docfxConfigFilePath );
+                     Cake.DocFxMetadata( new DocFxMetadataSettings()
+                     {
+                         WorkingDirectory = docfxDir
+                     } );
+                     Cake.DocFxBuild( new DocFxBuildSettings()
+                     {
+                         WorkingDirectory = docfxDir
+                     } );
                  } );
 
             Task( "Push-GitHub-Pages" )
