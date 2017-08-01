@@ -211,6 +211,7 @@ namespace CodeCake
                 .IsDependentOn( "Execute-DocFX" )
                 .Does( () =>
                 {
+                    Exec( "git", $"--version" );
                     // Fetch gh-pages (AppVeyor creates a limited clone by default)
                     Exec( "git", $"fetch origin gh-pages" );
                     // Checkout gh-pages branch in ghPagesDir
