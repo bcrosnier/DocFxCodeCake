@@ -1,0 +1,4 @@
+# DocFX GitIgnore
+/**/obj/
+_site/
+msdn/
