@@ -250,7 +250,7 @@ namespace CodeCake
             string originalDir = Environment.CurrentDirectory;
             try
             {
-                Environment.CurrentDirectory = cwd.FullPath;
+                if( cwd != null ) Environment.CurrentDirectory = cwd.FullPath;
                 using( var ps = Cake.StartAndReturnProcess( cmd, new ProcessSettings()
                 {
                     Arguments = args,
