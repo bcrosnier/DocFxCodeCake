@@ -1,0 +1,20 @@
+# Basic appveyor configuration : CodeCakeBuilder does the job.
+version: build{build}
+branches:
+  only:
+  - master
+  - develop
+environment:
+  GITHUB_ACCESS_TOKEN:
+    secure: U2t3uWqttPm7G37f5OJo97lWmRk+WOKRqOawgObKICvfTtbf3xnSkTTiSveFra9E
+init:
+- git config --global core.autocrlf true
+install:
+  - git config --global credential.helper store
+  - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GITHUB_ACCESS_TOKEN):x-oauth-basic@github.com`n"
+  - git config --global user.email "noreply@appveyor.com"
+  - git config --global user.name "AppVeyor"
+  - ps: CodeCakeBuilder\Bootstrap.ps1
+build_script:
+- CodeCakeBuilder\bin\Release\CodeCakeBuilder.exe -nointeraction
+test: off
