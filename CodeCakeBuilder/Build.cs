@@ -262,6 +262,8 @@ namespace CodeCake
                 using( var ps = Cake.StartAndReturnProcess( cmd, new ProcessSettings()
                 {
                     Arguments = args,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     WorkingDirectory = cwd
                 } ) )
                 {
