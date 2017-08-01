@@ -211,7 +211,7 @@ namespace CodeCake
                      Exec( "git", "add .", "gh-pages" );
                      Exec( "git", "commit -m \"Update gh-pages\"", "gh-pages" );
                      Exec( "git", "push origin gh-pages", "gh-pages" );
-                     Cake.DeleteDirectory( "gh-pages" );
+                     Cake.DeleteDirectory( "gh-pages", true );
                  } );
 
             // The Default task for this script can be set here.
@@ -247,13 +247,22 @@ namespace CodeCake
 
         void Exec( string cmd, string args, DirectoryPath cwd = null )
         {
-            using( var ps = Cake.StartAndReturnProcess( cmd, new ProcessSettings()
+            string originalDir = Environment.CurrentDirectory;
+            try
             {
-                Arguments = args,
-                WorkingDirectory = cwd
-            } ) )
+                Environment.CurrentDirectory = cwd.FullPath;
+                using( var ps = Cake.StartAndReturnProcess( cmd, new ProcessSettings()
+                {
+                    Arguments = args,
+                    WorkingDirectory = cwd
+                } ) )
+                {
+                    ps.WaitForExit();
+                }
+            }
+            finally
             {
-                ps.WaitForExit();
+                Environment.CurrentDirectory = originalDir;
             }
         }
     }
