@@ -207,10 +207,10 @@ namespace CodeCake
                      } );
 
                      Exec( "git", "worktree add gh-pages" );
-                     Cake.CopyDirectory( "Documentation/_site", "gh-pages" );
-                     Exec( "git", "add .", "gh-pages" );
-                     Exec( "git", "commit -m \"Update gh-pages\"", "gh-pages" );
-                     Exec( "git", "push origin gh-pages", "gh-pages" );
+                     Cake.CopyDirectory( "Documentation/_site", ghPagesDir );
+                     Exec( "git", "add .", ghPagesDir );
+                     Exec( "git", "commit -m \"Update gh-pages\"", ghPagesDir );
+                     Exec( "git", "push origin gh-pages", ghPagesDir );
                      Cake.DeleteDirectory( "gh-pages", true );
                  } );
 
